@@ -1,0 +1,6 @@
+{
+  "name": "AutoLISP Pro - AI CAD Studio",
+  "description": "Nền tảng tạo AutoLISP thông minh, quản lý thư viện LISP cá nhân và phiên bản mã nguồn chuyên sâu cho kỹ sư cầu đường, hạ tầng và xây dựng.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
