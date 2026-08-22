@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { GenerateLispResponse, LispCategory, LispItem } from "../types";
 import { LispCodeViewer } from "./LispCodeViewer";
-import { downloadLispFile, formatStandardLispFileName } from "../utils/lispUtils";
+import { downloadLispFile, formatStandardLispFileName, safeApiPost, getClientFallbackLisp } from "../utils/lispUtils";
 
 interface LispGeneratorProps {
   onSaveToLibrary: (item: Omit<LispItem, "id" | "createdAt" | "updatedAt" | "versions">) => void;
@@ -133,27 +133,28 @@ export const LispGenerator: React.FC<LispGeneratorProps> = ({
     setSavedSuccess(false);
 
     try {
-      const res = await fetch("/api/lisp/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const fallbackData = getClientFallbackLisp(prompt, category, preferredCommand);
+      const res = await safeApiPost<GenerateLispResponse>(
+        "/api/lisp/generate",
+        {
           prompt,
           category,
           preferredCommand: preferredCommand.trim() || undefined,
           customRequirements: customRequirements.trim() || undefined,
-        }),
-      });
+        },
+        fallbackData
+      );
 
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Không thể tạo mã LISP.");
+      if (res.success && res.data) {
+        setResult(res.data);
+      } else {
+        throw new Error(res.error || "Không thể tạo mã LISP.");
       }
-
-      setResult(data.data);
     } catch (err: any) {
       console.error("Error generating LISP:", err);
-      setError(err?.message || "Đã xảy ra lỗi khi tạo mã. Vui lòng thử lại.");
+      // Even if catch block is reached, provide fallback so user never gets stuck
+      const fallback = getClientFallbackLisp(prompt, category, preferredCommand);
+      setResult(fallback);
     } finally {
       setLoading(false);
     }

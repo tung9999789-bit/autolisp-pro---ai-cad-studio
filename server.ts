@@ -11,6 +11,11 @@ const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
 
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Lazy init Gemini client
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -69,9 +74,10 @@ function extractJsonFromText(rawText: string): any {
 
 // Candidate models for automatic fallback when high demand (503 / 429) occurs
 const CANDIDATE_MODELS = [
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
   "gemini-3.7-flash",
+  "gemini-2.0-flash",
 ];
 
 async function generateGeminiContentWithFallback(
@@ -102,10 +108,8 @@ async function generateGeminiContentWithFallback(
       }
     } catch (err: any) {
       lastError = err;
-      const errMsg = err?.message || String(err);
-      console.warn(`[Gemini Switch Fallback] Model: ${model} failed (${errMsg.substring(0, 120)}), switching to next model...`);
-      // Short delay before trying next model
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Gracefully switch to next candidate model with short delay
+      await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
 

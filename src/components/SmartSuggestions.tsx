@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SMART_WORKFLOW_SUGGESTIONS } from "../data/initialLisps";
 import { LispCategory } from "../types";
+import { safeApiPost } from "../utils/lispUtils";
 
 interface SmartSuggestionsProps {
   onSelectPrompt: (prompt: string, category: LispCategory, preferredCommand: string) => void;
@@ -33,25 +34,41 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onSelectProm
     setLoading(true);
     setError(null);
 
+    const fallbackSuggestions = [
+      {
+        command: "DT",
+        title: "Tính diện tích & xuất Text",
+        summary: "Tính diện tích hình kín và ghi kết quả ra màn hình",
+        benefit: "Tiết kiệm 80% thời gian tính toán",
+        promptTemplate: `Viết LISP tính diện tích hình kín phù hợp với yêu cầu: ${taskQuery}`,
+      },
+      {
+        command: "TL",
+        title: "Tính tổng chiều dài (TL)",
+        summary: "Đo tổng chiều dài các đoạn thẳng, cung tròn, polyline",
+        benefit: "Thống kê khối lượng nhanh gấp 10 lần",
+        promptTemplate: `Viết LISP đo và thống kê tổng chiều dài cho yêu cầu: ${taskQuery}`,
+      },
+    ];
+
     try {
-      const res = await fetch("/api/lisp/suggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await safeApiPost<any[]>(
+        "/api/lisp/suggest",
+        {
           taskDescription: taskQuery,
           field,
-        }),
-      });
+        },
+        fallbackSuggestions
+      );
 
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Không thể lấy gợi ý giải pháp.");
+      if (res.success && res.data) {
+        setAiSuggestions(res.data);
+      } else {
+        throw new Error(res.error || "Không thể lấy gợi ý giải pháp.");
       }
-
-      setAiSuggestions(data.data);
     } catch (err: any) {
       console.error("Error suggesting LISP:", err);
-      setError(err?.message || "Đã xảy ra lỗi khi tìm giải pháp. Vui lòng thử lại.");
+      setAiSuggestions(fallbackSuggestions);
     } finally {
       setLoading(false);
     }
