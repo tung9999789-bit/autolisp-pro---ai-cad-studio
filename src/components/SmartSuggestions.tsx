@@ -113,6 +113,22 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onSelectProm
               )}
             </button>
           </form>
+
+          {error && (
+            <div className="mt-3 flex items-start justify-between gap-2 rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+              <div className="flex items-start gap-2">
+                <span className="font-bold">Lỗi:</span>
+                <span>{error}</span>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => handleSearchAiSuggestions(e as any)}
+                className="shrink-0 px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] transition cursor-pointer"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

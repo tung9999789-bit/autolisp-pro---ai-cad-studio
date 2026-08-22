@@ -384,9 +384,18 @@ export const LispGenerator: React.FC<LispGeneratorProps> = ({
 
             {/* Error banner */}
             {error && (
-              <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
+              <div className="flex items-start justify-between gap-2 rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleGenerate()}
+                  className="shrink-0 px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] transition cursor-pointer"
+                >
+                  Thử lại
+                </button>
               </div>
             )}
 
